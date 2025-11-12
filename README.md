@@ -209,7 +209,8 @@ python app.py
 - **Recent Analyses**: Track history of recent analysis jobs
 - **Background Processing**: Run multiple analyses without blocking the interface
 
-### Web UI Screenshots
+<img width="1226" height="651" alt="image" src="https://github.com/user-attachments/assets/d5b1a34a-65ce-4442-b329-50d51982b95d" />
+
 
 The web interface provides:
 1. A clean form to input analysis parameters
