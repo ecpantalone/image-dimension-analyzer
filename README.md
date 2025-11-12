@@ -20,7 +20,7 @@ This tool provides efficient parallel processing and comprehensive reporting cap
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/ecpantalone/image-dimension-analyzer.git
 cd image-dimension-analyzer
 
 # Install dependencies
