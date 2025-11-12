@@ -1,4 +1,7 @@
 image_analysis_*
 image_analysis.log*
+image_analysis_errors.log
 PROJECT_STATUS.md
 analysis_results/
+__pycache__/
+*.pyc
