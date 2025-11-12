@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Dimension Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Image Dimension Analyzer</h1>
+            <p class="subtitle">Analyze images to find those with specific dimensions</p>
+        </header>
+
+        <main>
+            <div class="card">
+                <h2>New Analysis</h2>
+                <form id="analysisForm">
+                    <div class="form-group">
+                        <label for="directory">Directory Path:</label>
+                        <div class="input-group">
+                            <input type="text" id="directory" name="directory" placeholder="/path/to/images" required>
+                            <button type="button" id="browseBtn" class="btn-secondary">Browse</button>
+                        </div>
+                        <small>Enter the path to the directory containing images</small>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="dimension">Target Dimension (px):</label>
+                            <input type="number" id="dimension" name="dimension" value="330" min="1" required>
+                            <small>Pixel dimension to search for</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="mode">Match Mode:</label>
+                            <select id="mode" name="mode">
+                                <option value="lte">Less than or equal (≤)</option>
+                                <option value="exact">Exact match (=)</option>
+                            </select>
+                            <small>How to match dimensions</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="workers">Workers:</label>
+                            <input type="number" id="workers" name="workers" value="4" min="1" max="16">
+                            <small>Parallel processing threads</small>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary">Start Analysis</button>
+                </form>
+            </div>
+
+            <div id="progressSection" class="card hidden">
+                <h2>Analysis Progress</h2>
+                <div class="progress-info">
+                    <p id="statusText">Initializing...</p>
+                    <div class="progress-bar">
+                        <div id="progressFill" class="progress-fill"></div>
+                    </div>
+                    <p id="statsText" class="stats"></p>
+                </div>
+            </div>
+
+            <div id="resultsSection" class="card hidden">
+                <h2>Analysis Results</h2>
+                <div class="results-summary">
+                    <div class="stat-card">
+                        <h3>Total Images</h3>
+                        <p id="totalImages" class="stat-value">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Matching Images</h3>
+                        <p id="matchingImages" class="stat-value">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Match Rate</h3>
+                        <p id="matchRate" class="stat-value">0%</p>
+                    </div>
+                </div>
+                <div class="download-buttons">
+                    <button id="downloadAll" class="btn-secondary">Download All Results (CSV)</button>
+                    <button id="downloadMatching" class="btn-primary">Download Matching Images (CSV)</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Recent Analyses</h2>
+                <div id="recentAnalyses">
+                    <p class="loading">Loading recent analyses...</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- Directory Browser Modal -->
+        <div id="browserModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Select Directory</h2>
+                    <button class="close-btn">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div id="currentPath" class="current-path"></div>
+                    <div id="directoryList" class="directory-list"></div>
+                </div>
+                <div class="modal-footer">
+                    <button id="selectDirBtn" class="btn-primary">Select This Directory</button>
+                    <button id="cancelBrowseBtn" class="btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
