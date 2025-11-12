@@ -67,12 +67,19 @@ def run_analysis(job):
         job.status = 'running'
         job.start_time = datetime.now()
         
-        # Run the analysis
+        # Define progress callback
+        def update_progress(percent, processed, total, matches):
+            job.progress = percent
+            job.total_images = processed
+            job.matching_images = matches
+        
+        # Run the analysis with progress callback
         all_results, matching_results = process_images(
             Path(job.directory),
             job.target_dimension,
             job.workers,
-            job.mode
+            job.mode,
+            progress_callback=update_progress
         )
         
         job.total_images = len(all_results)
@@ -150,13 +157,19 @@ def download_results(job_id, file_type):
     if not job:
         return jsonify({'error': 'Job not found'}), 404
     
-    if job.status != 'completed':
+    if job.status != 'completed' and file_type != 'errors':
         return jsonify({'error': 'Job not completed'}), 400
     
     if file_type == 'all':
         file_path = job.all_results_file
     elif file_type == 'matching':
         file_path = job.matching_results_file
+    elif file_type == 'errors':
+        # Download the error log file
+        file_path = 'image_analysis_errors.log'
+        if not Path(file_path).exists():
+            return jsonify({'error': 'No error log file found'}), 404
+        return send_file(file_path, as_attachment=True, download_name='error_log.txt')
     else:
         return jsonify({'error': 'Invalid file type'}), 400
     
@@ -164,6 +177,20 @@ def download_results(job_id, file_type):
         return jsonify({'error': 'File not found'}), 404
     
     return send_file(file_path, as_attachment=True)
+
+@app.route('/download-errors')
+def download_error_log():
+    """Download the error log file"""
+    error_log_path = Path('image_analysis_errors.log')
+    if not error_log_path.exists():
+        return jsonify({'error': 'No error log file found. Errors will appear here when they occur.'}), 404
+    
+    # Get file size and last modified time
+    file_stats = error_log_path.stat()
+    if file_stats.st_size == 0:
+        return jsonify({'error': 'Error log is empty'}), 404
+    
+    return send_file(str(error_log_path), as_attachment=True, download_name='error_log.txt')
 
 @app.route('/browse')
 def browse_directory():

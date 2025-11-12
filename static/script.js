@@ -1,9 +1,7 @@
-// Global variables
 let currentJobId = null;
 let currentPath = '.';
 let pollInterval = null;
 
-// DOM elements
 const analysisForm = document.getElementById('analysisForm');
 const browseBtn = document.getElementById('browseBtn');
 const browserModal = document.getElementById('browserModal');
@@ -11,31 +9,25 @@ const progressSection = document.getElementById('progressSection');
 const resultsSection = document.getElementById('resultsSection');
 const directoryInput = document.getElementById('directory');
 
-// Initialize
 document.addEventListener('DOMContentLoaded', () => {
     loadRecentAnalyses();
     setupEventListeners();
 });
 
-// Setup event listeners
 function setupEventListeners() {
-    // Form submission
     analysisForm.addEventListener('submit', handleFormSubmit);
     
-    // Browse button
     browseBtn.addEventListener('click', openBrowser);
     
-    // Modal controls
     document.querySelector('.close-btn').addEventListener('click', closeBrowser);
     document.getElementById('cancelBrowseBtn').addEventListener('click', closeBrowser);
     document.getElementById('selectDirBtn').addEventListener('click', selectDirectory);
     
-    // Download buttons
     document.getElementById('downloadAll').addEventListener('click', () => downloadResults('all'));
     document.getElementById('downloadMatching').addEventListener('click', () => downloadResults('matching'));
+    document.getElementById('downloadErrorLog').addEventListener('click', downloadErrorLog);
 }
 
-// Handle form submission
 async function handleFormSubmit(e) {
     e.preventDefault();
     
@@ -68,22 +60,18 @@ async function handleFormSubmit(e) {
     }
 }
 
-// Start tracking progress
 function startProgressTracking() {
     progressSection.classList.remove('hidden');
     resultsSection.classList.add('hidden');
     
-    // Update UI immediately
     updateProgress({
         status: 'running',
         progress: 0
     });
     
-    // Start polling for updates
     pollInterval = setInterval(checkProgress, 1000);
 }
 
-// Check progress of current job
 async function checkProgress() {
     if (!currentJobId) return;
     
@@ -107,13 +95,11 @@ async function checkProgress() {
     }
 }
 
-// Update progress display
 function updateProgress(data) {
     const statusText = document.getElementById('statusText');
     const progressFill = document.getElementById('progressFill');
     const statsText = document.getElementById('statsText');
     
-    // Update status text
     if (data.status === 'running') {
         statusText.textContent = 'Analyzing images...';
     } else if (data.status === 'pending') {
@@ -122,24 +108,20 @@ function updateProgress(data) {
         statusText.textContent = 'Analysis complete!';
     }
     
-    // Update progress bar
     if (data.progress !== undefined) {
         progressFill.style.width = `${data.progress}%`;
         progressFill.textContent = `${Math.round(data.progress)}%`;
     }
     
-    // Update stats
     if (data.total_images > 0) {
         statsText.textContent = `Found ${data.total_images} images, ${data.matching_images} match criteria`;
     }
 }
 
-// Show results
 function showResults(data) {
     progressSection.classList.add('hidden');
     resultsSection.classList.remove('hidden');
     
-    // Update statistics
     document.getElementById('totalImages').textContent = data.total_images;
     document.getElementById('matchingImages').textContent = data.matching_images;
     
@@ -149,14 +131,28 @@ function showResults(data) {
     document.getElementById('matchRate').textContent = `${matchRate}%`;
 }
 
-// Download results
 async function downloadResults(type) {
     if (!currentJobId) return;
     
     window.location.href = `/download/${currentJobId}/${type}`;
 }
 
-// Directory browser functions
+async function downloadErrorLog() {
+    try {
+        const response = await fetch('/download-errors');
+        
+        if (response.ok) {
+            // Trigger download
+            window.location.href = '/download-errors';
+        } else {
+            const data = await response.json();
+            showError(data.error || 'Failed to download error log');
+        }
+    } catch (error) {
+        showError('Network error: ' + error.message);
+    }
+}
+
 async function openBrowser() {
     browserModal.classList.remove('hidden');
     await loadDirectory(currentPath);
@@ -207,7 +203,6 @@ function selectDirectory() {
     closeBrowser();
 }
 
-// Load recent analyses
 async function loadRecentAnalyses() {
     try {
         const response = await fetch('/recent');
@@ -243,17 +238,13 @@ async function loadRecentAnalyses() {
     }
 }
 
-// Utility functions
 function showError(message) {
-    // Create error element
     const errorDiv = document.createElement('div');
     errorDiv.className = 'error';
     errorDiv.textContent = message;
     
-    // Insert after form
     analysisForm.parentElement.insertBefore(errorDiv, analysisForm.nextSibling);
     
-    // Remove after 5 seconds
     setTimeout(() => errorDiv.remove(), 5000);
 }
 
@@ -267,5 +258,4 @@ function showSuccess(message) {
     setTimeout(() => successDiv.remove(), 5000);
 }
 
-// Auto-refresh recent analyses every 10 seconds
 setInterval(loadRecentAnalyses, 10000);

@@ -17,15 +17,32 @@ from tqdm import tqdm
 import concurrent.futures
 from collections import defaultdict
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('image_analysis.log'),
-        logging.StreamHandler()
-    ]
-)
+# Configure logging with separate error file
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+# Formatter for log messages
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+
+# Handler for all logs
+all_handler = logging.FileHandler('image_analysis.log')
+all_handler.setLevel(logging.INFO)
+all_handler.setFormatter(formatter)
+
+# Handler for errors only
+error_handler = logging.FileHandler('image_analysis_errors.log')
+error_handler.setLevel(logging.ERROR)
+error_handler.setFormatter(formatter)
+
+# Console handler
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+console_handler.setFormatter(formatter)
+
+# Add handlers to logger
+logger.addHandler(all_handler)
+logger.addHandler(error_handler)
+logger.addHandler(console_handler)
 
 SUPPORTED_FORMATS = {'.jpg', '.jpeg', '.png', '.tiff', '.tif', '.bmp', '.gif', '.webp'}
 DEFAULT_TARGET_DIMENSION = 330
@@ -88,7 +105,7 @@ def find_images(directory: Path, extensions: set = None) -> List[Path]:
     
     return list(set(image_files))
 
-def process_images(directory: Path, target_dimension: int, max_workers: int = 4, mode: str = 'lte') -> Tuple[List[Dict], List[Dict]]:
+def process_images(directory: Path, target_dimension: int, max_workers: int = 4, mode: str = 'lte', progress_callback=None) -> Tuple[List[Dict], List[Dict]]:
     """
     Process all images in directory using parallel processing.
     
@@ -97,6 +114,7 @@ def process_images(directory: Path, target_dimension: int, max_workers: int = 4,
         target_dimension: Target dimension to check against
         max_workers: Maximum number of parallel workers
         mode: 'lte' for less than or equal, 'exact' for exact match
+        progress_callback: Optional callback function for progress updates
         
     Returns:
         Tuple of (all_results, matching_results)
@@ -111,7 +129,10 @@ def process_images(directory: Path, target_dimension: int, max_workers: int = 4,
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = {executor.submit(analyze_image, img, target_dimension, mode): img for img in image_files}
         
-        with tqdm(total=len(image_files), desc="Analyzing images") as pbar:
+        processed_count = 0
+        total_count = len(image_files)
+        
+        with tqdm(total=total_count, desc="Analyzing images") as pbar:
             for future in concurrent.futures.as_completed(futures):
                 result = future.result()
                 if result:
@@ -119,7 +140,14 @@ def process_images(directory: Path, target_dimension: int, max_workers: int = 4,
                     if result['matches_criteria']:
                         matching_results.append(result)
                         logger.info(f"Found match: {result['filename']} ({result['width']}x{result['height']})")
+                
+                processed_count += 1
                 pbar.update(1)
+                
+                # Call progress callback if provided
+                if progress_callback:
+                    progress_percent = (processed_count / total_count) * 100
+                    progress_callback(progress_percent, processed_count, total_count, len(matching_results))
     
     return all_results, matching_results
 

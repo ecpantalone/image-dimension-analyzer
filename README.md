@@ -126,9 +126,10 @@ SUPPORTED_FORMATS = {'.jpg', '.jpeg', '.png', '.tiff', '.tif', '.bmp', '.gif', '
 
 ## Logging
 
-Logs are written to both:
+Logs are written to multiple destinations:
 - Console output (INFO level and above)
-- `image_analysis.log` file (detailed debugging information)
+- `image_analysis.log` file (all logs - INFO, WARNING, ERROR)
+- `image_analysis_errors.log` file (ERROR level only - for quick error review)
 
 ## Testing
 
@@ -195,7 +196,8 @@ The tool includes a web-based user interface for easier interaction.
 # Start the Flask web server
 python app.py
 
-# The web interface will be available at http://localhost:5000
+# The web interface will be available at http://localhost:5001
+# Note: Port 5001 is used to avoid conflicts with AirPlay Receiver on macOS
 ```
 
 ### Web UI Features
