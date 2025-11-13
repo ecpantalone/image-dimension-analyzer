@@ -165,10 +165,6 @@ image-dimension-analyzer/
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## License
-
-[Specify your license here]
-
 ## Examples
 
 ### Finding thumbnail images (≤150px)
