@@ -1,3 +1,5 @@
+<img width="1280" height="640" alt="Image-dimension-analyzer-logo" src="https://github.com/user-attachments/assets/cd2c4015-0bf0-4db7-8aca-47eff6b93f29" />
+
 # Image Dimension Analyzer
 
 A high-performance Python tool for analyzing large image datasets to identify images with specific dimensions on either width or height.
